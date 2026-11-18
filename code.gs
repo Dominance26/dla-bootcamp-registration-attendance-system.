@@ -5,7 +5,7 @@
 
 const CONFIG = {
   PREFIX: "DLA BC",
-  WEB_APP_URL: "https://script.google.com/macros/s/AKfycbyvUcINYmCldhgrRjidPR1Jb0gsxNOwCrPp8uiSuuFxSqU_zLId3PtPPm8z3HtrfkFl/exec",
+  WEB_APP_URL: "appscrip url here",
   QR_SIZE: "300x300",
   ORGANIZER_PIN: "REPLACE_WITH_YOUR_NEW_PRIVATE_PIN"
 };
