@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f5f5;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 420px;
+      margin: 30px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 14px;
+      box-shadow: 0 3px 15px #0001;
+    }
+
+    h2 {
+      color: #155e63;
+      text-align: center;
+    }
+
+    .detail {
+      padding: 12px;
+      background: #f5f7f7;
+      margin: 12px 0;
+      border-radius: 8px;
+    }
+
+    input, button {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    input {
+      border: 1px solid #bbb;
+    }
+
+    button {
+      background: #155e63;
+      color: white;
+      border: none;
+      font-weight: bold;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+    }
+
+    #message {
+      margin-top: 18px;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>DLA BOOTCAMP</h2>
+    <h3>Attendance Verification</h3>
+
+    <div id="loading">Verifying QR code...</div>
+
+    <div id="details" style="display:none;">
+      <div class="detail">
+        <strong>Participant:</strong>
+        <span id="name"></span>
+      </div>
+
+      <div class="detail">
+        <strong>Registration Number:</strong>
+        <span id="code"></span>
+      </div>
+
+      <div class="detail">
+        <strong>Attendance Status:</strong>
+        <span id="status"></span>
+      </div>
+
+      <div id="organizer">
+        <input
+          type="password"
+          id="pin"
+          placeholder="Enter organizer PIN"
+          autocomplete="off">
+
+        <button id="checkinButton" onclick="checkIn()">
+          MARK PRESENT
+        </button>
+      </div>
+    </div>
+
+    <div id="message"></div>
+  </div>
+
+  <script>
+    const token = <?!= JSON.stringify(token) ?>;
+
+    function loadParticipant() {
+      if (!token) {
+        document.getElementById("loading").innerText =
+          "No QR token found.";
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          document.getElementById("loading").style.display = "none";
+
+          if (!result.success) {
+            document.getElementById("message").innerText =
+              result.message;
+            return;
+          }
+
+          document.getElementById("details").style.display = "block";
+          document.getElementById("name").innerText = result.name;
+          document.getElementById("code").innerText = result.code;
+          document.getElementById("status").innerText = result.status;
+
+          if (result.status === "Present") {
+            document.getElementById("organizer").style.display = "none";
+            document.getElementById("message").innerText =
+              "This participant has already checked in.";
+          }
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById("loading").innerText =
+            "Error: " + error.message;
+        })
+        .getParticipant(token);
+    }
+
+    function checkIn() {
+      const pin = document.getElementById("pin").value;
+      const button = document.getElementById("checkinButton");
+      const message = document.getElementById("message");
+
+      if (!pin) {
+        message.innerText = "Please enter the organizer PIN.";
+        return;
+      }
+
+      button.disabled = true;
+      button.innerText = "VERIFYING...";
+      message.innerText = "";
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          message.innerText = result.message;
+          button.disabled = false;
+          button.innerText = "MARK PRESENT";
+
+          if (result.success) {
+            document.getElementById("status").innerText = "Present";
+            document.getElementById("organizer").style.display = "none";
+          }
+        })
+        .withFailureHandler(function(error) {
+          message.innerText = "Error: " + error.message;
+          button.disabled = false;
+          button.innerText = "MARK PRESENT";
+        })
+        .markPresent(token, pin);
+    }
+
+    loadParticipant();
+  </script>
+</body>
+</html>
