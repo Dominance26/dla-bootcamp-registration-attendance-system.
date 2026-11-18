@@ -1,4 +1,3 @@
-
 /****************************************************
  * DLA BOOTCAMP 2026
  * REGISTRATION + EMAIL + QR ATTENDANCE SYSTEM
